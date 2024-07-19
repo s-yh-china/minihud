@@ -272,6 +272,11 @@ public class RenderHandler implements IRenderer
         this.lineWrappers.add(new StringHolder(text));
     }
 
+    private void addLineI18n(String translatedName, Object... args)
+    {
+        this.addLine(StringUtils.translate(translatedName, args));
+    }
+
     private void addLine(InfoToggle type)
     {
         MinecraftClient mc = this.mc;
@@ -291,7 +296,7 @@ public class RenderHandler implements IRenderer
 
         if (type == InfoToggle.FPS)
         {
-            this.addLine(String.format("%d fps", MinecraftClient.getInstance().getCurrentFps()));
+            this.addLineI18n("minihud.info.fps", MinecraftClient.getInstance().getCurrentFps());
         }
         else if (type == InfoToggle.MEMORY_USAGE)
         {
@@ -300,12 +305,12 @@ public class RenderHandler implements IRenderer
             long memFree = Runtime.getRuntime().freeMemory();
             long memUsed = memTotal - memFree;
 
-            this.addLine(String.format("Mem: % 2d%% %03d/%03dMB | Allocated: % 2d%% %03dMB",
+            this.addLineI18n("minihud.info.memory_usage",
                     memUsed * 100L / memMax,
                     MiscUtils.bytesToMb(memUsed),
                     MiscUtils.bytesToMb(memMax),
                     memTotal * 100L / memMax,
-                    MiscUtils.bytesToMb(memTotal)));
+                    MiscUtils.bytesToMb(memTotal));
         }
         else if (type == InfoToggle.TIME_REAL)
         {
@@ -317,14 +322,14 @@ public class RenderHandler implements IRenderer
             }
             catch (Exception e)
             {
-                this.addLine("Date formatting failed - Invalid date format string?");
+                this.addLineI18n("minihud.info.time.exception");
             }
         }
         else if (type == InfoToggle.TIME_WORLD)
         {
             long current = world.getTimeOfDay();
             long total = world.getTime();
-            this.addLine(String.format("World time: %5d - total: %d", current, total));
+            this.addLineI18n("minihud.info.time_world", current, total);
         }
         else if (type == InfoToggle.TIME_WORLD_FORMATTED)
         {
@@ -338,18 +343,15 @@ public class RenderHandler implements IRenderer
                 int min = (int) (dayTicks / 16.666666) % 60;
                 int sec = (int) (dayTicks / 0.277777) % 60;
                 // Moonphase has 8 different states in MC
-                String moon = "Invalid";
-                switch ((int) day % 8)
+                int moonNumber = (int) day % 8;
+                String moon;
+                if (moonNumber > 7)
                 {
-                    case 0: moon = "Full moon"; break;
-                    case 1: moon = "Waning gibbous"; break;
-                    case 2: moon = "Last quarter"; break;
-                    case 3: moon = "Waning crescent"; break;
-                    case 4: moon = "New moon"; break;
-                    case 5: moon = "Waxing crescent"; break;
-                    case 6: moon = "First quarter"; break;
-                    case 7: moon = "Waxing gibbous"; break;
-                    default:
+                    moon = StringUtils.translate("minihud.info_line.invalid_value");
+                }
+                else
+                {
+                    moon = StringUtils.translate("minihud.info.time_world_formatted.moon_" + moonNumber);
                 }
 
                 String str = Configs.Generic.DATE_FORMAT_MINECRAFT.getStringValue();
@@ -364,20 +366,20 @@ public class RenderHandler implements IRenderer
             }
             catch (Exception e)
             {
-                this.addLine("Date formatting failed - Invalid date format string?");
+                this.addLineI18n("minihud.info.time.exception");
             }
         }
         else if (type == InfoToggle.TIME_DAY_MODULO)
         {
             int mod = Configs.Generic.TIME_DAY_DIVISOR.getIntegerValue();
             long current = world.getTimeOfDay() % mod;
-            this.addLine(String.format("Day time %% %d: %5d", mod, current));
+            this.addLineI18n("minihud.info.time_day_modulo", mod, current);
         }
         else if (type == InfoToggle.TIME_TOTAL_MODULO)
         {
             int mod = Configs.Generic.TIME_TOTAL_DIVISOR.getIntegerValue();
             long current = world.getTime() % mod;
-            this.addLine(String.format("Total time %% %d: %5d", mod, current));
+            this.addLineI18n("minihud.info.time_total_modulo", mod, current);
         }
         else if (type == InfoToggle.SERVER_TPS)
         {
@@ -402,19 +404,19 @@ public class RenderHandler implements IRenderer
                     else if (mspt <= 50) { preMspt = GuiBase.TXT_GOLD; }
                     else                 { preMspt = GuiBase.TXT_RED; }
 
-                    this.addLine(String.format("Server TPS: %s%.1f%s MSPT: %s%.1f%s", preTps, tps, rst, preMspt, mspt, rst));
+                    this.addLineI18n("minihud.info.server_tps", preTps, tps, rst, preMspt, mspt, rst);
                 }
                 else
                 {
                     if (mspt <= 51) { preMspt = GuiBase.TXT_GREEN; }
                     else            { preMspt = GuiBase.TXT_RED; }
 
-                    this.addLine(String.format("Server TPS: %s%.1f%s (MSPT [est]: %s%.1f%s)", preTps, tps, rst, preMspt, mspt, rst));
+                    this.addLineI18n("minihud.info.server_tps.est", preTps, tps, rst, preMspt, mspt, rst);
                 }
             }
             else
             {
-                this.addLine("Server TPS: <no valid data>");
+                this.addLineI18n("minihud.info.server_tps.invalid");
             }
         }
         else if (type == InfoToggle.MOB_CAPS)
@@ -437,7 +439,7 @@ public class RenderHandler implements IRenderer
 
             if (info != null)
             {
-                this.addLine("Ping: " + info.getLatency() + " ms");
+                this.addLineI18n("minihud.info_line.ping", info.getLatency());
             }
         }
         else if (type == InfoToggle.COORDINATES ||
@@ -469,12 +471,12 @@ public class RenderHandler implements IRenderer
                     // Uh oh, someone done goofed their format string... :P
                     catch (Exception e)
                     {
-                        str.append("broken coordinate format string!");
+                        str.append(StringUtils.translate("minihud.info_line.coordinates.exception"));
                     }
                 }
                 else
                 {
-                    str.append(String.format("XYZ: %.2f / %.4f / %.2f", x, y, z));
+                    str.append(StringUtils.translate("minihud.info_line.coordinates.format", x, y, z));
                 }
 
                 pre = " / ";
@@ -492,11 +494,11 @@ public class RenderHandler implements IRenderer
 
                 if (isNether)
                 {
-                    str.append("Overworld: ");
+                    str.append(StringUtils.translate("minihud.info_line.coordinates_scaled.overworld"));
                 }
                 else
                 {
-                    str.append("Nether: ");
+                    str.append(StringUtils.translate("minihud.info_line.coordinates_scaled.nether"));
                 }
 
                 if (Configs.Generic.USE_CUSTOMIZED_COORDINATES.getBooleanValue())
@@ -508,12 +510,12 @@ public class RenderHandler implements IRenderer
                     // Uh oh, someone done goofed their format string... :P
                     catch (Exception e)
                     {
-                        str.append("broken coordinate format string!");
+                        str.append(StringUtils.translate("minihud.info_line.coordinates.exception"));
                     }
                 }
                 else
                 {
-                    str.append(String.format("XYZ: %.2f / %.4f / %.2f", x, y, z));
+                    str.append(StringUtils.translate("minihud.info_line.coordinates.format", x, y, z));
                 }
 
                 pre = " / ";
@@ -522,7 +524,7 @@ public class RenderHandler implements IRenderer
             if (InfoToggle.DIMENSION.getBooleanValue())
             {
                 String dimName = world.getRegistryKey().getValue().toString();
-                str.append(pre).append("dim: ").append(dimName);
+                str.append(pre).append(StringUtils.translate("minihud.info_line.dimension")).append(dimName);
             }
 
             this.addLine(str.toString());
@@ -556,7 +558,7 @@ public class RenderHandler implements IRenderer
                 // Uh oh, someone done goofed their format string... :P
                 catch (Exception e)
                 {
-                    str.append("broken format string in 'blockPosFormat'");
+                    str.append(StringUtils.translate("minihud.info_line.block_pos.exception"));
                 }
 
                 pre = " / ";
@@ -564,13 +566,13 @@ public class RenderHandler implements IRenderer
 
             if (InfoToggle.CHUNK_POS.getBooleanValue())
             {
-                str.append(pre).append(String.format("Sub-Chunk: %d, %d, %d", chunkPos.x, pos.getY() >> 4, chunkPos.z));
+                str.append(pre).append(StringUtils.translate("minihud.info_line.chunk_pos", chunkPos.x, pos.getY() >> 4, chunkPos.z));
                 pre = " / ";
             }
 
             if (InfoToggle.REGION_FILE.getBooleanValue())
             {
-                str.append(pre).append(String.format("Region: r.%d.%d", pos.getX() >> 9, pos.getZ() >> 9));
+                str.append(pre).append(StringUtils.translate("minihud.info_line.region_file", pos.getX() >> 9, pos.getZ() >> 9));
             }
 
             this.addLine(str.toString());
@@ -581,40 +583,41 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.BLOCK_IN_CHUNK)
         {
-            this.addLine(String.format("Block: %d, %d, %d within Sub-Chunk: %d, %d, %d",
+            this.addLineI18n("minihud.info_line.block_in_chunk",
                         pos.getX() & 0xF, pos.getY() & 0xF, pos.getZ() & 0xF,
-                        chunkPos.x, pos.getY() >> 4, chunkPos.z));
+                        chunkPos.x, pos.getY() >> 4, chunkPos.z);
         }
         else if (type == InfoToggle.BLOCK_BREAK_SPEED)
         {
-            this.addLine(String.format("BBS: %.2f", DataStorage.getInstance().getBlockBreakingSpeed()));
+            this.addLineI18n("minihud.info_line.block_break_speed", DataStorage.getInstance().getBlockBreakingSpeed());
         }
         else if (type == InfoToggle.SPRINTING && mc.player.isSprinting())
         {
-            this.addLine("§6Sprinting");
+            this.addLineI18n("minihud.info_line.sprinting");
         }
         else if (type == InfoToggle.DISTANCE)
         {
             Vec3d ref = DataStorage.getInstance().getDistanceReferencePoint();
             double dist = Math.sqrt(ref.squaredDistanceTo(entity.getX(), entity.getY(), entity.getZ()));
-            this.addLine(String.format("Distance: %.2f (x: %.2f y: %.2f z: %.2f) [to x: %.2f y: %.2f z: %.2f]",
-                    dist, entity.getX() - ref.x, entity.getY() - ref.y, entity.getZ() - ref.z, ref.x, ref.y, ref.z));
+            this.addLineI18n("minihud.info_line.distance",
+                    dist, entity.getX() - ref.x, entity.getY() - ref.y, entity.getZ() - ref.z, ref.x, ref.y, ref.z);
         }
         else if (type == InfoToggle.FACING)
         {
             Direction facing = entity.getHorizontalFacing();
-            String str = "Invalid";
-
-            switch (facing)
+            String facingName = StringUtils.translate("minihud.info_line.facing." + facing.getName() + ".name");
+            String str;
+            if (facingName.contains("minihud.info_line.facing." + facing.getName() + ".name"))
             {
-                case NORTH: str = "Negative Z"; break;
-                case SOUTH: str = "Positive Z"; break;
-                case WEST:  str = "Negative X"; break;
-                case EAST:  str = "Positive X"; break;
-                default:
+                facingName = facing.name();
+                str = StringUtils.translate("minihud.info_line.invalid_value");
+            }
+            else
+            {
+                str = StringUtils.translate("minihud.info_line.facing." + facing.getName());
             }
 
-            this.addLine(String.format("Facing: %s (%s)", facing, str));
+            this.addLineI18n("minihud.info_line.facing", facingName, str);
         }
         else if (type == InfoToggle.LIGHT_LEVEL)
         {
@@ -624,8 +627,7 @@ public class RenderHandler implements IRenderer
             {
                 LightingProvider lightingProvider = world.getChunkManager().getLightingProvider();
 
-                this.addLine(String.format("Light (block): %d",
-                                           lightingProvider.get(LightType.BLOCK).getLightLevel(pos)));
+                this.addLineI18n("minihud.info_line.light_level", lightingProvider.get(LightType.BLOCK).getLightLevel(pos));
             }
         }
         else if (type == InfoToggle.BEE_COUNT)
@@ -635,7 +637,7 @@ public class RenderHandler implements IRenderer
 
             if (be instanceof BeehiveBlockEntity)
             {
-                this.addLine("Bees: " + GuiBase.TXT_AQUA + ((BeehiveBlockEntity) be).getBeeCount());
+                this.addLineI18n("minihud.info_line.bee_count", ((BeehiveBlockEntity) be).getBeeCount());
             }
         }
         else if (type == InfoToggle.FURNACE_XP)
@@ -645,7 +647,7 @@ public class RenderHandler implements IRenderer
 
             if (be instanceof AbstractFurnaceBlockEntity furnace)
             {
-                this.addLine("Furnace XP: " + GuiBase.TXT_AQUA + MiscUtils.getFurnaceXpAmount(furnace));
+                this.addLineI18n("minihud.info_line.furnace_xp", MiscUtils.getFurnaceXpAmount(furnace));
             }
         }
         else if (type == InfoToggle.HONEY_LEVEL)
@@ -654,7 +656,7 @@ public class RenderHandler implements IRenderer
 
             if (state != null && state.getBlock() instanceof BeehiveBlock)
             {
-                this.addLine("Honey: " + GuiBase.TXT_AQUA + BeehiveBlockEntity.getHoneyLevel(state));
+                this.addLineI18n("minihud.info_line.honey_level", BeehiveBlockEntity.getHoneyLevel(state));
             }
         }
         else if (type == InfoToggle.HORSE_SPEED ||
@@ -680,30 +682,30 @@ public class RenderHandler implements IRenderer
 
             if (horse instanceof CamelEntity)
             {
-                AnimalType = "Camel";
+                AnimalType = StringUtils.translate("minihud.info_line.animal_type.camel");
             }
             else if (horse instanceof DonkeyEntity)
             {
-                AnimalType = "Donkey";
+                AnimalType = StringUtils.translate("minihud.info_line.animal_type.donkey");
             }
             else if (horse instanceof MuleEntity)
             {
-                AnimalType = "Mule";
+                AnimalType = StringUtils.translate("minihud.info_line.animal_type.mule");
             }
             else if (horse instanceof LlamaEntity || horse instanceof TraderLlamaEntity)
             {
-                AnimalType = "Llama";
+                AnimalType = StringUtils.translate("minihud.info_line.animal_type.llama");
             }
             else
             {
-                AnimalType = "Horse";
+                AnimalType = StringUtils.translate("minihud.info_line.animal_type.horse");
             }
 
             if (InfoToggle.HORSE_SPEED.getBooleanValue())
             {
                 float speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horse.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED);
                 speed *= 42.1629629629629f;
-                this.addLine(String.format(AnimalType + " Speed: %.3f m/s", speed));
+                this.addLine(String.format(AnimalType + " " + StringUtils.translate("minihud.info_line.horse_speed"), speed));
             }
 
             if (InfoToggle.HORSE_JUMP.getBooleanValue())
@@ -714,7 +716,7 @@ public class RenderHandler implements IRenderer
                                 3.689713992d * jump * jump +
                                 2.128599134d * jump +
                                 -0.343930367;
-                this.addLine(String.format(AnimalType + " Jump: %.3f m", calculatedJumpHeight));
+                this.addLine(String.format(AnimalType + " " + StringUtils.translate("minihud.info_line.horse_jump"), calculatedJumpHeight));
             }
 
             this.addedTypes.add(InfoToggle.HORSE_SPEED);
@@ -737,13 +739,13 @@ public class RenderHandler implements IRenderer
 
             if (InfoToggle.ROTATION_YAW.getBooleanValue())
             {
-                str.append(String.format("yaw: %.1f", MathHelper.wrapDegrees(entity.getYaw())));
+                str.append(StringUtils.translate("minihud.info_line.rotation_yaw", MathHelper.wrapDegrees(entity.getYaw())));
                 pre = " / ";
             }
 
             if (InfoToggle.ROTATION_PITCH.getBooleanValue())
             {
-                str.append(pre).append(String.format("pitch: %.1f", MathHelper.wrapDegrees(entity.getPitch())));
+                str.append(pre).append(StringUtils.translate("minihud.info_line.rotation_pitch", MathHelper.wrapDegrees(entity.getPitch())));
                 pre = " / ";
             }
 
@@ -753,7 +755,7 @@ public class RenderHandler implements IRenderer
                 double dy = entity.getY() - entity.lastRenderY;
                 double dz = entity.getZ() - entity.lastRenderZ;
                 double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                str.append(pre).append(String.format("speed: %.3f m/s", dist * 20));
+                str.append(pre).append(StringUtils.translate("minihud.info_line.speed", dist * 20));
             }
 
             this.addLine(str.toString());
@@ -767,18 +769,18 @@ public class RenderHandler implements IRenderer
             double dx = entity.getX() - entity.lastRenderX;
             double dy = entity.getY() - entity.lastRenderY;
             double dz = entity.getZ() - entity.lastRenderZ;
-            this.addLine(String.format("speed: xz: %.3f y: %.3f m/s", Math.sqrt(dx * dx + dz * dz) * 20, dy * 20));
+            this.addLineI18n("minihud.info_line.speed_hv", Math.sqrt(dx * dx + dz * dz) * 20, dy * 20);
         }
         else if (type == InfoToggle.SPEED_AXIS)
         {
             double dx = entity.getX() - entity.lastRenderX;
             double dy = entity.getY() - entity.lastRenderY;
             double dz = entity.getZ() - entity.lastRenderZ;
-            this.addLine(String.format("speed: x: %.3f y: %.3f z: %.3f m/s", dx * 20, dy * 20, dz * 20));
+            this.addLineI18n("minihud.info_line.speed_axis", dx * 20, dy * 20, dz * 20);
         }
         else if (type == InfoToggle.CHUNK_SECTIONS)
         {
-            this.addLine(String.format("C: %d", ((IMixinWorldRenderer) mc.worldRenderer).getRenderedChunksInvoker()));
+            this.addLineI18n("minihud.info_line.chunk_sections", ((IMixinWorldRenderer) mc.worldRenderer).getRenderedChunksInvoker());
         }
         else if (type == InfoToggle.CHUNK_SECTIONS_FULL)
         {
@@ -797,7 +799,7 @@ public class RenderHandler implements IRenderer
             {
                 int chunksServer = worldServer.getChunkManager().getLoadedChunkCount();
                 int chunksServerTot = ((ServerChunkManager) worldServer.getChunkManager()).getTotalChunksLoadedCount();
-                this.addLine(String.format("Server: %d / %d - Client: %s", chunksServer, chunksServerTot, chunksClient));
+                this.addLineI18n("minihud.info_line.loaded_chunks_count.server", chunksServer, chunksServerTot, chunksClient);
             }
             else
             {
@@ -806,7 +808,7 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.PARTICLE_COUNT)
         {
-            this.addLine(String.format("P: %s", mc.particleManager.getDebugString()));
+            this.addLineI18n("minihud.info_line.particle_count", mc.particleManager.getDebugString());
         }
         else if (type == InfoToggle.DIFFICULTY)
         {
@@ -821,8 +823,8 @@ public class RenderHandler implements IRenderer
             }
 
             LocalDifficulty diff = new LocalDifficulty(mc.world.getDifficulty(), mc.world.getTimeOfDay(), chunkInhabitedTime, moonPhaseFactor);
-            this.addLine(String.format("Local Difficulty: %.2f // %.2f (Day %d)",
-                    diff.getLocalDifficulty(), diff.getClampedLocalDifficulty(), mc.world.getTimeOfDay() / 24000L));
+            this.addLineI18n("minihud.info_line.difficulty",
+                    diff.getLocalDifficulty(), diff.getClampedLocalDifficulty(), mc.world.getTimeOfDay() / 24000L);
         }
         else if (type == InfoToggle.BIOME)
         {
@@ -832,7 +834,7 @@ public class RenderHandler implements IRenderer
             {
                 Biome biome = mc.world.getBiome(pos).value();
                 Identifier id = mc.world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
-                this.addLine("Biome: " + StringUtils.translate("biome." + id.toString().replace(":", ".")));
+                this.addLineI18n("minihud.info_line.biome", StringUtils.translate("biome." + id.toString().replace(":", ".")));
             }
         }
         else if (type == InfoToggle.BIOME_REG_NAME)
@@ -844,7 +846,7 @@ public class RenderHandler implements IRenderer
                 Biome biome = mc.world.getBiome(pos).value();
                 Identifier rl = mc.world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
                 String name = rl != null ? rl.toString() : "?";
-                this.addLine("Biome reg name: " + name);
+                this.addLineI18n("minihud.info_line.biome_reg_name", name);
             }
         }
         else if (type == InfoToggle.ENTITIES)
@@ -864,7 +866,7 @@ public class RenderHandler implements IRenderer
         {
             // TODO 1.17
             //this.addLine(String.format("Client world TE - L: %d, T: %d", mc.world.blockEntities.size(), mc.world.tickingBlockEntities.size()));
-            this.addLine("Client world TE - L: ?, T: ? - TODO 1.17");
+            this.addLineI18n("minihud.info_line.tile_entities");
         }
         else if (type == InfoToggle.ENTITIES_CLIENT_WORLD)
         {
@@ -878,12 +880,12 @@ public class RenderHandler implements IRenderer
                 {
                     IServerEntityManager manager = (IServerEntityManager) ((IMixinServerWorld) serverWorld).minihud_getEntityManager();
                     int indexSize = manager.getIndexSize();
-                    this.addLine(String.format("Entities - Client: %d - Server: %d", countClient, indexSize));
+                    this.addLineI18n("minihud.info_line.entities_client_world.server", countClient, indexSize);
                     return;
                 }
             }
 
-            this.addLine(String.format("Entities - Client: %d", countClient));
+            this.addLineI18n("minihud.info_line.entities_client_world", countClient);
         }
         else if (type == InfoToggle.SLIME_CHUNK)
         {
@@ -900,19 +902,19 @@ public class RenderHandler implements IRenderer
 
                 if (MiscUtils.canSlimeSpawnAt(pos.getX(), pos.getZ(), seed))
                 {
-                    result = GuiBase.TXT_GREEN + "YES" + GuiBase.TXT_RST;
+                    result = StringUtils.translate("minihud.info_line.slime_chunk.yes");
                 }
                 else
                 {
-                    result = GuiBase.TXT_RED + "NO" + GuiBase.TXT_RST;
+                    result = StringUtils.translate("minihud.info_line.slime_chunk.no");
                 }
             }
             else
             {
-                result = "<world seed not known>";
+                result = StringUtils.translate("minihud.info_line.slime_chunk.no_seed");
             }
 
-            this.addLine("Slime chunk: " + result);
+            this.addLineI18n("minihud.info_line.slime_chunk", result);
         }
         else if (type == InfoToggle.LOOKING_AT_ENTITY)
         {
@@ -921,14 +923,14 @@ public class RenderHandler implements IRenderer
                 Entity lookedEntity = this.getTargetEntity(world, mc);
                 if (lookedEntity instanceof LivingEntity living)
                 {
-                    String entityLine = String.format("Entity: %s - HP: %.1f / %.1f", living.getName().getString(), living.getHealth(), living.getMaxHealth());
+                    String entityLine = StringUtils.translate("minihud.info_line.looking_at_entity.livingentity", living.getName().getString(), living.getHealth(), living.getMaxHealth());
 
                     if (living instanceof Tameable tamable)
                     {
                         LivingEntity owner = tamable.getOwner();
                         if (owner != null)
                         {
-                            entityLine = entityLine+" - Owner: "+owner.getName().getLiteralString();
+                            entityLine = entityLine + " - " + StringUtils.translate("minihud.info_line.looking_at_entity.owner") + ": " + owner.getName().getLiteralString();
                         }
                     }
                     if (living instanceof PassiveEntity passive)
@@ -936,7 +938,7 @@ public class RenderHandler implements IRenderer
                         if (passive.getBreedingAge() < 0)
                         {
                             int untilGrown = ((IMixinPassiveEntity) passive).getRealBreedingAge() * (-1);
-                            entityLine = entityLine+ " [" + DurationFormatUtils.formatDurationWords(untilGrown * 50, true, true) + " remaining]";
+                            entityLine = entityLine+ " [" + DurationFormatUtils.formatDurationWords(untilGrown * 50, true, true) + " " + StringUtils.translate("minihud.info_line.looking_at_entity.remaining") + "]";
                         }
                     }
 
@@ -944,7 +946,7 @@ public class RenderHandler implements IRenderer
                 }
                 else
                 {
-                    this.addLine(String.format("Entity: %s", lookedEntity.getName().getString()));
+                    this.addLineI18n("minihud.info_line.looking_at_entity", lookedEntity.getName().getString());
                 }
             }
         }
@@ -957,7 +959,7 @@ public class RenderHandler implements IRenderer
 
                 if (regName != null)
                 {
-                    this.addLine(String.format("Entity reg name: %s", regName));
+                    this.addLineI18n("minihud.info_line.entity_reg_name", regName);
                 }
             }
         }
@@ -979,13 +981,13 @@ public class RenderHandler implements IRenderer
 
                 if (InfoToggle.LOOKING_AT_BLOCK.getBooleanValue())
                 {
-                    str.append(String.format("Looking at block: %d, %d, %d", lookPos.getX(), lookPos.getY(), lookPos.getZ()));
+                    str.append(StringUtils.translate("minihud.info_line.looking_at_block", lookPos.getX(), lookPos.getY(), lookPos.getZ()));
                     pre = " // ";
                 }
 
                 if (InfoToggle.LOOKING_AT_BLOCK_CHUNK.getBooleanValue())
                 {
-                    str.append(pre).append(String.format("Block: %d, %d, %d in Sub-Chunk: %d, %d, %d",
+                    str.append(pre).append(StringUtils.translate("minihud.info_line.looking_at_block_chunk",
                             lookPos.getX() & 0xF, lookPos.getY() & 0xF, lookPos.getZ() & 0xF,
                             lookPos.getX() >> 4, lookPos.getY() >> 4, lookPos.getZ() >> 4));
                 }
