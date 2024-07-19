@@ -296,7 +296,7 @@ public class RenderHandler implements IRenderer
 
         if (type == InfoToggle.FPS)
         {
-            this.addLineI18n("minihud.info.fps", MinecraftClient.getInstance().getCurrentFps());
+            this.addLineI18n("minihud.info_line.fps", MinecraftClient.getInstance().getCurrentFps());
         }
         else if (type == InfoToggle.MEMORY_USAGE)
         {
@@ -305,7 +305,7 @@ public class RenderHandler implements IRenderer
             long memFree = Runtime.getRuntime().freeMemory();
             long memUsed = memTotal - memFree;
 
-            this.addLineI18n("minihud.info.memory_usage",
+            this.addLineI18n("minihud.info_line.memory_usage",
                     memUsed * 100L / memMax,
                     MiscUtils.bytesToMb(memUsed),
                     MiscUtils.bytesToMb(memMax),
@@ -322,14 +322,14 @@ public class RenderHandler implements IRenderer
             }
             catch (Exception e)
             {
-                this.addLineI18n("minihud.info.time.exception");
+                this.addLineI18n("minihud.info_line.time.exception");
             }
         }
         else if (type == InfoToggle.TIME_WORLD)
         {
             long current = world.getTimeOfDay();
             long total = world.getTime();
-            this.addLineI18n("minihud.info.time_world", current, total);
+            this.addLineI18n("minihud.info_line.time_world", current, total);
         }
         else if (type == InfoToggle.TIME_WORLD_FORMATTED)
         {
@@ -351,7 +351,7 @@ public class RenderHandler implements IRenderer
                 }
                 else
                 {
-                    moon = StringUtils.translate("minihud.info.time_world_formatted.moon_" + moonNumber);
+                    moon = StringUtils.translate("minihud.info_line.time_world_formatted.moon_" + moonNumber);
                 }
 
                 String str = Configs.Generic.DATE_FORMAT_MINECRAFT.getStringValue();
@@ -366,20 +366,20 @@ public class RenderHandler implements IRenderer
             }
             catch (Exception e)
             {
-                this.addLineI18n("minihud.info.time.exception");
+                this.addLineI18n("minihud.info_line.time.exception");
             }
         }
         else if (type == InfoToggle.TIME_DAY_MODULO)
         {
             int mod = Configs.Generic.TIME_DAY_DIVISOR.getIntegerValue();
             long current = world.getTimeOfDay() % mod;
-            this.addLineI18n("minihud.info.time_day_modulo", mod, current);
+            this.addLineI18n("minihud.info_line.time_day_modulo", mod, current);
         }
         else if (type == InfoToggle.TIME_TOTAL_MODULO)
         {
             int mod = Configs.Generic.TIME_TOTAL_DIVISOR.getIntegerValue();
             long current = world.getTime() % mod;
-            this.addLineI18n("minihud.info.time_total_modulo", mod, current);
+            this.addLineI18n("minihud.info_line.time_total_modulo", mod, current);
         }
         else if (type == InfoToggle.SERVER_TPS)
         {
@@ -404,19 +404,19 @@ public class RenderHandler implements IRenderer
                     else if (mspt <= 50) { preMspt = GuiBase.TXT_GOLD; }
                     else                 { preMspt = GuiBase.TXT_RED; }
 
-                    this.addLineI18n("minihud.info.server_tps", preTps, tps, rst, preMspt, mspt, rst);
+                    this.addLineI18n("minihud.info_line.server_tps", preTps, tps, rst, preMspt, mspt, rst);
                 }
                 else
                 {
                     if (mspt <= 51) { preMspt = GuiBase.TXT_GREEN; }
                     else            { preMspt = GuiBase.TXT_RED; }
 
-                    this.addLineI18n("minihud.info.server_tps.est", preTps, tps, rst, preMspt, mspt, rst);
+                    this.addLineI18n("minihud.info_line.server_tps.est", preTps, tps, rst, preMspt, mspt, rst);
                 }
             }
             else
             {
-                this.addLineI18n("minihud.info.server_tps.invalid");
+                this.addLineI18n("minihud.info_line.server_tps.invalid");
             }
         }
         else if (type == InfoToggle.MOB_CAPS)
