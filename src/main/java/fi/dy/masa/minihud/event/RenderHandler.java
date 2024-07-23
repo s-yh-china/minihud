@@ -8,7 +8,6 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -34,7 +33,6 @@ import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -53,7 +51,6 @@ import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -718,43 +715,23 @@ public class RenderHandler implements IRenderer
             }
 
             World bestWorld = WorldUtils.getBestWorld(mc);
-            Entity targeted = this.getTargetEntity(world, this.mc);
+            Entity targeted = this.getTargetEntity(bestWorld, this.mc);
             Entity vehicle = targeted == null ? this.mc.player.getVehicle() : targeted;
 
-            if ((vehicle instanceof AbstractHorseEntity) == false)
+            if (vehicle instanceof AbstractHorseEntity == false)
             {
                 return;
             }
 
             AbstractHorseEntity horse = (AbstractHorseEntity) vehicle;
-            String AnimalType;
-
-            if (horse instanceof CamelEntity)
-            {
-                AnimalType = StringUtils.translate("minihud.info_line.animal_type.camel");
-            }
-            else if (horse instanceof DonkeyEntity)
-            {
-                AnimalType = StringUtils.translate("minihud.info_line.animal_type.donkey");
-            }
-            else if (horse instanceof MuleEntity)
-            {
-                AnimalType = StringUtils.translate("minihud.info_line.animal_type.mule");
-            }
-            else if (horse instanceof LlamaEntity || horse instanceof TraderLlamaEntity)
-            {
-                AnimalType = StringUtils.translate("minihud.info_line.animal_type.llama");
-            }
-            else
-            {
-                AnimalType = StringUtils.translate("minihud.info_line.animal_type.horse");
-            }
+            String AnimalType = horse.getType().getName().getString();
 
             if (InfoToggle.HORSE_SPEED.getBooleanValue())
             {
                 float speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horse.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED);
                 speed *= 42.1629629629629f;
-                this.addLine(String.format(AnimalType + " " + StringUtils.translate("minihud.info_line.horse_speed"), speed));
+                this.addLineI18n(StringUtils.translate("minihud.info_line.horse_speed"), AnimalType, speed);
+                this.addedTypes.add(InfoToggle.HORSE_SPEED);
             }
 
             if (InfoToggle.HORSE_JUMP.getBooleanValue())
@@ -765,11 +742,9 @@ public class RenderHandler implements IRenderer
                                 3.689713992d * jump * jump +
                                 2.128599134d * jump +
                                 -0.343930367;
-                this.addLine(String.format(AnimalType + " " + StringUtils.translate("minihud.info_line.horse_jump"), calculatedJumpHeight));
+                this.addLineI18n(StringUtils.translate("minihud.info_line.horse_jump"), AnimalType, calculatedJumpHeight);
+                this.addedTypes.add(InfoToggle.HORSE_JUMP);
             }
-
-            this.addedTypes.add(InfoToggle.HORSE_SPEED);
-            this.addedTypes.add(InfoToggle.HORSE_JUMP);
         }
         else if (type == InfoToggle.ROTATION_YAW ||
                  type == InfoToggle.ROTATION_PITCH ||
