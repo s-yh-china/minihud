@@ -67,6 +67,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     CHUNK_SECTIONS          ("infoChunkSections",           false, "", "minihud.config.info_toggle.comment.infoChunkSections", "minihud.config.info_toggle.name.infoChunkSections"),
     CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       false, "", "minihud.config.info_toggle.comment.infoChunkSectionsLine", "minihud.config.info_toggle.name.infoChunkSectionsLine"),
     CHUNK_UPDATES           ("infoChunkUpdates",            false, "", "minihud.config.info_toggle.comment.infoChunkUpdates", "minihud.config.info_toggle.name.infoChunkUpdates"),
+    REGION_FILE             ("infoRegionFile",              false, "", "minihud.config.info_toggle.comment.infoRegionFile", "minihud.config.info_toggle.name.infoRegionFile"),
     SLIME_CHUNK             ("infoSlimeChunk",              false, "", "minihud.config.info_toggle.comment.infoSlimeChunk", "minihud.config.info_toggle.name.infoSlimeChunk"),
 
     // Block
